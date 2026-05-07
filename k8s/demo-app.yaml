@@ -1,0 +1,70 @@
+---
+# ── Namespace ────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+
+---
+# ── Deployment ───────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+  namespace: demo
+  labels:
+    app: demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+        - name: demo-app
+          image: 192.168.56.10:5000/demo-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8090
+          env:
+            - name: APP_ENV
+              value: "DEV"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8090
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8090
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "300m"
+
+---
+# ── Service (NodePort so you can reach it from browser) ──────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app
+  namespace: demo
+spec:
+  type: NodePort
+  selector:
+    app: demo-app
+  ports:
+    - port: 8090
+      targetPort: 8090
+      nodePort: 30090   # access via http://192.168.56.20:30090

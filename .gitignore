@@ -1,0 +1,12 @@
+target/
+*.class
+*.jar
+*.war
+.mvn/
+!.mvn/wrapper/
+.idea/
+*.iml
+*.iws
+.DS_Store
+trivy.json
+gitleaks.json
