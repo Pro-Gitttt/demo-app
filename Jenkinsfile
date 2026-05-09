@@ -113,29 +113,27 @@ for r in results:
         // ── FIX: Gitleaks on src/ only — valid JSON array output ─────────────
         stage('Gitleaks Scan') {
             steps {
-                sh '''
-                    # Scan only source directory — not target/ or the whole workspace
-                    gitleaks detect \
-                      --source src/ \
-                      --report-format json \
-                      --report-path gitleaks.json \
+                sh """
+                    gitleaks detect \\
+                      --source src/ \\
+                      --report-format json \\
+                      --report-path gitleaks.json \\
                       --no-git || true
 
-                    # Gitleaks writes [] when nothing found — backend needs []
                     if [ ! -s gitleaks.json ]; then
-                        echo "[]" > gitleaks.json
+                        echo '[]' > gitleaks.json
                     fi
 
                     echo "=== Gitleaks results ==="
                     python3 -c "
-import sys, json
+import json
 data = json.load(open('gitleaks.json'))
 leaks = data if isinstance(data, list) else []
-print(f'Secrets found: {len(leaks)}')
+print('Secrets found: ' + str(len(leaks)))
 for l in leaks[:5]:
-    print(f'  [{l.get(\"RuleID\",\"?\")}] {l.get(\"File\",\"?\")}:{l.get(\"StartLine\",\"?\")}')
+    print('  [' + str(l.get('RuleID','?')) + '] ' + str(l.get('File','?')))
 "
-                '''
+                """
             }
         }
 
