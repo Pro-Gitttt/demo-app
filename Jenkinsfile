@@ -197,17 +197,37 @@ except:
 
         stage('Docker Push') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'nexus-credentials',
-                    usernameVariable: 'NEXUS_USER',
-                    passwordVariable: 'NEXUS_PASS'
-                )]) {
-                    sh """
-                        echo "${NEXUS_PASS}" | docker login ${REGISTRY} \
-                          -u ${NEXUS_USER} --password-stdin
-                        docker push ${IMAGE_NAME}:latest
-                        docker push ${IMAGE_NAME}:${BUILD_NUMBER}
-                    """
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'nexus-credentials',
+                        usernameVariable: 'NEXUS_USER',
+                        passwordVariable: 'NEXUS_PASS'
+                    )]) {
+                        // FIX: use single-quoted sh so Groovy does NOT interpolate
+                        // $NEXUS_PASS before the shell sees it — safe with special chars.
+                        // Use printf instead of echo to avoid trailing newline issues.
+                        sh '''
+                            set -e
+
+                            echo "=== Checking registry connectivity ==="
+                            curl -sf --max-time 5 http://192.168.56.10:5000/v2/ || {
+                                echo "ERROR: Nexus registry 192.168.56.10:5000 unreachable"
+                                echo "Make sure Nexus is running: sudo docker ps | grep nexus"
+                                exit 1
+                            }
+                            echo "Registry reachable ✓"
+
+                            echo "=== Docker login ==="
+                            printf '%s' "$NEXUS_PASS" | docker login 192.168.56.10:5000 \
+                                -u "$NEXUS_USER" --password-stdin
+                            echo "Docker login successful ✓"
+
+                            echo "=== Pushing images ==="
+                            docker push 192.168.56.10:5000/demo-app:latest
+                            docker push "192.168.56.10:5000/demo-app:$BUILD_NUMBER"
+                            echo "Images pushed successfully ✓"
+                        '''
+                    }
                 }
             }
         }
