@@ -20,7 +20,7 @@ pipeline {
         SONAR_URL            = "http://192.168.56.10:9000"
 
         // Security Service — NodePort on k8s VM
-        SECURITY_SERVICE_URL = "http://192.168.56.20:30083/api/security/scan"
+        SECURITY_SERVICE_URL = "http://192.168.56.20:30080/api/security/scan"
 
         // Gateway — for status callback
         GATEWAY_URL          = "http://192.168.56.20:30080"
