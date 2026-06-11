@@ -61,7 +61,7 @@ pipeline {
         // ── 3. SONARQUBE ──────────────────────────────────────────────────────
         stage('SonarQube Analysis') {
             steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                withCredentials([string(credentialsId: 'sonar-token-demo', variable: 'SONAR_TOKEN')]) {
                     withEnv(["JAVA_HOME=${JAVA_HOME_17}", "PATH+JAVA=${JAVA_HOME_17}/bin"]) {
                         sh """
                             mvn sonar:sonar \
