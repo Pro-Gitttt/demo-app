@@ -88,6 +88,9 @@ pipeline {
                         printf '{"SchemaVersion":2,"Results":[]}' > trivy.json
                     fi
 
+                    # Ensure Results key exists (Trivy omits it when zero findings)
+                    python3 -c "import json; d=json.load(open(\"trivy.json\")); d.setdefault(\"Results\", []); json.dump(d, open(\"trivy.json\",\"w\"))"
+
                     echo "trivy.json content (first 200 chars):"
                     head -c 200 trivy.json
                     echo ""
