@@ -89,7 +89,7 @@ pipeline {
                     fi
 
                     # Ensure Results key exists (Trivy omits it when zero findings)
-                    python3 -c "import json; d=json.load(open(\"trivy.json\")); d.setdefault(\"Results\", []); json.dump(d, open(\"trivy.json\",\"w\"))"
+                    python3 -c 'import json; d=json.load(open("trivy.json")); d.setdefault("Results", []); json.dump(d, open("trivy.json","w"))'
 
                     echo "trivy.json content (first 200 chars):"
                     head -c 200 trivy.json
@@ -179,8 +179,8 @@ pipeline {
             steps {
                 sh """
                     kubectl apply -f ${K8S_MANIFEST}
-                    kubectl rollout restart deployment/demo-app -n dev
-                    kubectl rollout status deployment/demo-app -n dev --timeout=120s
+                    kubectl rollout restart deployment/demo-app -n demo
+                    kubectl rollout status deployment/demo-app -n demo --timeout=120s
                 """
             }
         }
